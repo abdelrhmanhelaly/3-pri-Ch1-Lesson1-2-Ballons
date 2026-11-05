@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>كيمياء الثانوية العامة - فرقعة البالونات</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0b1329;
+      --card-bg: #111b36;
+      --card-border: #1c3260;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --balloon-border: rgba(255, 255, 255, 0.4);
+    }
+
+    body.light-mode {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --card-border: #cbd5e1;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --balloon-border: rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      transition: background-color 0.3s;
+    }
+
+    #game-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--bg-color);
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 13px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .top-bar-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-badge {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    body.light-mode .btn-badge {
+      background: #e2e8f0;
+      color: #0369a1;
+    }
+
+    .designer-banner {
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid var(--accent);
+      color: #38bdf8;
+      text-align: center;
+      padding: 5px;
+      font-size: 12.5px;
+      font-weight: bold;
+      margin: 4px 10px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+
+    body.light-mode .designer-banner {
+      color: #0284c7;
+      background: #e0f2fe;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 4px 10px;
+      z-index: 10;
+    }
+
+    .stat-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      text-align: center;
+      padding: 4px 2px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+    }
+
+    .stat-val {
+      font-size: 12px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .timer-warning {
+      color: #ef4444 !important;
+      animation: blink 0.8s infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    .btn-skip {
+      background: #ea580c;
+      color: white;
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .question-box {
+      background: var(--card-bg);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      margin: 4px 10px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.45;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      transition: border-color 0.3s;
+    }
+
+    .question-badge {
+      position: absolute;
+      top: -9px;
+      left: 10px;
+      background: #16a34a;
+      color: white;
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    #game-stage {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .balloon {
+      position: absolute;
+      width: 98px;
+      height: 122px;
+      border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 11.5px;
+      padding: 4px;
+      cursor: pointer;
+      box-shadow: inset -5px -5px 12px rgba(0,0,0,0.3), inset 6px 6px 12px rgba(255,255,255,0.4), 0 8px 15px rgba(0,0,0,0.3);
+      border: 1px solid var(--balloon-border);
+      touch-action: manipulation;
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.4s ease, left 0.4s ease, opacity 0.3s ease;
+    }
+
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 7px solid currentColor;
+    }
+
+    .balloon::before {
+      content: "";
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      width: 2px;
+      height: 12px;
+      background: #94a3b8;
+    }
+
+    .balloon-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .balloon-text-ar {
+      direction: rtl;
+      unicode-bidi: isolate;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .chem-formula {
+      direction: ltr !important;
+      unicode-bidi: isolate !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-weight: bold;
+      font-size: 12.5px;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .balloon.highlight-correct {
+      border: 4px solid #22c55e !important;
+      box-shadow: 0 0 30px #22c55e, inset 0 0 12px #ffffff !important;
+      z-index: 40 !important;
+      animation: pulse-correct 0.6s infinite alternate;
+    }
+
+    .balloon.center-focus {
+      position: absolute !important;
+      top: 40% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) scale(1.35) !important;
+      z-index: 50 !important;
+    }
+
+    .balloon.fade-out {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-correct {
+      0% { box-shadow: 0 0 15px #22c55e; }
+      100% { box-shadow: 0 0 35px #22c55e, inset 0 0 10px #ffffff; }
+    }
+
+    .screen-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px 18px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #38bdf8;
+    }
+
+    .input-text {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      font-size: 14px;
+      margin: 10px 0;
+      outline: none;
+      text-align: center;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+
+    .option-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-opt {
+      background: #1e293b;
+      color: var(--text-sub);
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-opt.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn-action {
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover { background: #0369a1; }
+    .btn-success { background: #16a34a; }
+    .btn-success:hover { background: #15803d; }
+    .btn-purple { background: #7c3aed; }
+    .btn-purple:hover { background: #6d28d9; }
+
+    .loader-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: #38bdf8;
+      border-radius: 50%;
+      animation: pulse 1s infinite alternate;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0% { opacity: 0.2; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .advice-box {
+      border-right: 4px solid #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 14px;
+      color: #bae6fd;
+    }
+
+    .hidden { display: none !important; }
+
+    .footer-credits {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    sub, sup {
+      font-size: 0.72em;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    sub { bottom: -0.25em; }
+    sup { top: -0.45em; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+
+  <div class="top-bar">
+    <div>🧪 كيمياء الثانوية العامة</div>
+    <div class="top-bar-controls">
+      <button class="btn-badge" id="theme-btn" onclick="toggleTheme()">☀️ نهار</button>
+      <button class="btn-badge" id="speed-indicator">⚡ سرعة: بطيء</button>
+    </div>
+  </div>
+
+  <div class="designer-banner">
+    مصمم اللعبة: أ/ عبد الرحمن عبد الله - 01021779644
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-box">
+      <div class="stat-label">المستوى</div>
+      <div class="stat-val" id="level-display">1 / 3</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">الوقت</div>
+      <div class="stat-val" id="timer-display">03:00</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">النقاط</div>
+      <div class="stat-val" id="score-display">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">القلوب (<span id="hearts-count-num">10</span>/12)</div>
+      <div class="stat-val" id="hearts-display" style="font-size: 9.5px; letter-spacing: -1px;">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">تخطي (<span id="skip-num">3</span>)</div>
+      <button class="btn-skip" id="skip-btn" onclick="skipQuestion()">تخطي</button>
+    </div>
+  </div>
+
+  <div class="question-box" id="question-box">
+    <div class="question-badge" id="q-number-badge">سؤال 1</div>
+    <div id="question-text">نص السؤال يظهر هنا...</div>
+  </div>
+
+  <div id="game-stage"></div>
+
+  <!-- شاشة البداية -->
+  <div class="screen-overlay" id="start-screen">
+    <div class="card">
+      <h2>مرحباً بك يا بطل! 👋</h2>
+      <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 12px;">
+        فرقع البالونة التي تحمل الإجابة الصحيحة قبل صعودها للأعلى!
+      </p>
+
+      <input type="text" id="player-name-input" class="input-text" placeholder="اكتب اسمك هنا..." value="">
+
+      <div class="settings-row">
+        <span>مظهر الشاشة:</span>
+        <div class="option-group">
+          <button class="btn-opt active" id="mode-dark-btn" onclick="setAppTheme('dark')">داكن</button>
+          <button class="btn-opt" id="mode-light-btn" onclick="setAppTheme('light')">أبيض</button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span>السرعة:</span>
+        <div class="option-group">
+          <button class="btn-opt active" id="speed-slow-btn" onclick="setGameSpeed('slow')">بطيء</button>
+          <button class="btn-opt" id="speed-med-btn" onclick="setGameSpeed('med')">متوسط</button>
+          <button class="btn-opt" id="speed-fast-btn" onclick="setGameSpeed('fast')">سريع</button>
+        </div>
+      </div>
+
+      <div style="font-size: 11px; color: #38bdf8; margin: 10px 0; text-align: right; line-height: 1.5;">
+        * إجابة صحيحة = +10 نقاط.<br>
+        * لديك <strong>10 قلوب</strong> في البداية.<br>
+        * كل <strong>4 إجابات متتالية صحيحة</strong> تمنحك قلباً إضافياً (بحد أقصى 12 قلباً).<br>
+        * كل مستوى محدد بزمن <strong>3 دقائق (180 ثانية)</strong>.<br>
+        * بنك الأسئلة يحتوي على <strong>113 سؤالاً عشوائياً شاملاً</strong>.
+      </div>
+
+      <button class="btn-action" onclick="showPreloaderScreen()">ابدأ التحدي 🚀</button>
+      
+      <div class="footer-credits">
+        تصميم: أ/ عبد الرحمن عبد الله | 01021779644
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة الانتظار -->
+  <div class="screen-overlay hidden" id="prep-screen">
+    <div class="card">
+      <h3 style="color: #38bdf8;">اللعبة هتبدأ دلوقتي...</h3>
+      <div class="loader-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="advice-box" id="advice-text">
+        "التواضع عند الفهم وحسن الخلق مع الزملاء والمعلمين زكاة العلم الحقيقية."
+      </div>
+    </div>
+  </div>
+
+  <!-- شاشة النهاية والنتيجة -->
+  <div class="screen-overlay hidden" id="end-screen">
+    <div class="card" id="end-card">
+      <h2 style="color: #ef4444;" id="end-title">انتهى الوقت! ⏰</h2>
+      <h3 style="color: #38bdf8; font-size: 16px; margin-bottom: 12px; line-height: 1.5;" id="end-praise">أحسنت يا بطل! 👏</h3>
+      
+      <div style="font-size: 14px; margin: 12px 0;">
+        مجموع درجاتك: <span style="font-size: 24px; font-weight: bold; color: #eab308;" id="final-score">0</span>
+      </div>
+
+      <button class="btn-action btn-success" onclick="shareScore()">📲 مشاركة النتيجة كرسالة / بوست</button>
+      <button class="btn-action btn-purple" onclick="captureScreenshot()">📸 حفظ لقطة الشاشة على الهاتف</button>
+      <button class="btn-action" onclick="restartGame()">🔄 البدء من جديد (أسئلة جديدة)</button>
+
+      <div class="footer-credits" style="margin-top: 18px; border-top: 1px dashed var(--card-border); padding-top: 8px;">
+        مصمم اللعبة: أ/ عبد الرحمن عبد الله - 01021779644
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* بنك الأسئلة الشامل: 113 سؤالاً كاملاً وفق قواعد الآيوباك */
+  const masterQuestions = [
+    { q: "عملية كسر الروابط في جزيئات المواد المتفاعلة وتكوين روابط جديدة في جزيئات المواد الناتجة:", options: ["التفاعل الكيميائي", "الانحلال الحراري", "الإحلال المزدوج"], correct: 0 },
+    { q: "تفاعلات كيميائية تتحد فيها مادتان أو أكثر لتكوين مركب جديد:", options: ["الاتحاد المباشر", "الانحلال الحراري", "الإحلال البسيط"], correct: 0 },
+    { q: "تفاعلات تتفكك فيها بعض المركبات إلى مكونات أبسط باستخدام حرارة أو ضوء:", options: ["تفاعلات الانحلال", "الاتحاد المباشر", "التعادل"], correct: 0 },
+    { q: "غاز عديم اللون ينتج من انحلال أكسيد الزئبق الأحمر بالحرارة:", options: ["<span class='chem-formula'>O<sub>2</sub></span>", "<span class='chem-formula'>N<sub>2</sub></span>", "<span class='chem-formula'>H<sub>2</sub></span>"], correct: 0 },
+    { q: "الغاز الناتج من الانحلال الحراري لكربونات الكالسيوم ويعكر ماء الجير الرائق:", options: ["<span class='chem-formula'>CO<sub>2</sub></span>", "<span class='chem-formula'>CO</span>", "<span class='chem-formula'>SO<sub>2</sub></span>"], correct: 0 },
+    { q: "تفاعلات يحل فيها عنصر محل عنصر آخر في محلول أحد مركباته:", options: ["الإحلال البسيط", "الانحلال الحراري", "الإحلال المزدوج"], correct: 0 },
+    { q: "الغاز الناتج من تفاعل بعض الفلزات مع الأحماض المخففة:", options: ["<span class='chem-formula'>H<sub>2</sub></span>", "<span class='chem-formula'>O<sub>2</sub></span>", "<span class='chem-formula'>N<sub>2</sub></span>"], correct: 0 },
+    { q: "ترتيب العناصر الفلزية تنازلياً حسب درجة نشاطها الكيميائي:", options: ["متسلسلة النشاط الكيميائي", "الجدول الدوري الحديث", "التوزيع الإلكتروني"], correct: 0 },
+    { q: "غاز يتصاعد عند وضع قطعة صوديوم في الماء مشتعلاً بفرقعة شديدة:", options: ["<span class='chem-formula'>H<sub>2</sub></span>", "<span class='chem-formula'>O<sub>2</sub></span>", "<span class='chem-formula'>Cl<sub>2</sub></span>"], correct: 0 },
+    { q: "مادة سوداء اللون تتكون على أسطح الأدوات الفضية نتيجة تفاعلها مع الهواء الجوي:", options: ["<span class='chem-formula'>Ag<sub>2</sub>S</span>", "<span class='chem-formula'>Ag<sub>2</sub>O</span>", "<span class='chem-formula'>AgCl</span>"], correct: 0 },
+    { q: "عند اشتعال شريط الماغنسيوم في الهواء الجوي تتكون مادة:", options: ["بيضاء من <span class='chem-formula'>MgO</span>", "سوداء من <span class='chem-formula'>MgO</span>", "بيضاء من <span class='chem-formula'>MgCl<sub>2</sub></span>", "سوداء من <span class='chem-formula'>MgS</span>"], correct: 0 },
+    { q: "عند تقريب قطعة من الصوف الفولاذي من لهب بنزن يتكون بصفة أساسية:", options: ["<span class='chem-formula'>Fe<sub>3</sub>O<sub>4</sub></span>", "<span class='chem-formula'>FeO</span>", "<span class='chem-formula'>Fe<sub>2</sub>O<sub>3</sub></span>", "<span class='chem-formula'>FeCl<sub>2</sub></span>"], correct: 0 },
+    { q: "أي مما يلي لا يحترق بلهب مرئي عند تقريبه من لهب بنزن؟", options: ["سلك من النحاس", "قطعة من الصوف الفولاذي", "شريط من الماغنسيوم", "قطعة من البوتاسيوم"], correct: 0 },
+    { q: "ينحل أكسيد الزئبق الأحمر بالحرارة إلى:", options: ["زئبق فضي و <span class='chem-formula'>O<sub>2</sub></span>", "زئبق أحمر و <span class='chem-formula'>CO<sub>2</sub></span>", "زئبق فضي و <span class='chem-formula'>H<sub>2</sub></span>", "زئبق أحمر و <span class='chem-formula'>O<sub>2</sub></span>"], correct: 0 },
+    { q: "تنحل بعض كربونات الفلزات بالحرارة إلى:", options: ["أكسيد الفلز و <span class='chem-formula'>CO<sub>2</sub></span>", "الفلز وغاز الأكسجين", "الفلز و <span class='chem-formula'>CO<sub>2</sub></span>", "أكسيد الفلز وغاز <span class='chem-formula'>O<sub>2</sub></span>"], correct: 0 },
+    { q: "عند تسخين كربونات الكالسيوم نحصل على:", options: ["<span class='chem-formula'>CaO + CO<sub>2</sub></span>", "<span class='chem-formula'>Ca(HCO<sub>3</sub>)<sub>2</sub> + CO<sub>2</sub></span>", "<span class='chem-formula'>Ca(OH)<sub>2</sub> + CO<sub>2</sub></span>", "<span class='chem-formula'>CaO + CO</span>"], correct: 0 },
+    { q: "الغاز الناتج من تفاعل الفلزات النشطة مع الأحماض المخففة هو:", options: ["الهيدروجين", "الأكسجين", "النيتروجين", "ثاني أكسيد الكربون"], correct: 0 },
+    { q: "تبعاً لمتسلسلة النشاط الكيميائي، يعتبر الخارصين أنشط كيميائياً من:", options: ["الحديد", "الصوديوم", "البوتاسيوم", "الماغنسيوم"], correct: 0 },
+    { q: "عند إحلال الماغنسيوم محل النحاس في محلول أحد أملاحه يتكون راسب:", options: ["أحمر", "أسود", "أبيض", "أزرق"], correct: 0 },
+    { q: "يتفاعل الماغنسيوم مع حمض الهيدروكلوريك المخفف <span class='chem-formula'>HCl</span> ويتكون:", options: ["<span class='chem-formula'>MgCl<sub>2</sub> + H<sub>2</sub></span>", "<span class='chem-formula'>MgO + H<sub>2</sub></span>", "<span class='chem-formula'>MgCl<sub>2</sub> + Cl<sub>2</sub></span>", "<span class='chem-formula'>MgSO<sub>4</sub> + O<sub>2</sub></span>"], correct: 0 },
+    { q: "أي العبارات التالية تصف كل الفلزات التي تسبق الهيدروجين في متسلسلة النشاط؟", options: ["تحل محل هيدروجين الأحماض", "لا تتفاعل مع الأحماض", "تتفاعل جميعها مع الماء البارد", "لا تتفاعل مع الماء"], correct: 0 },
+    { q: "عند وضع كتلتين متساويتين من الخارصين والماغنسيوم في حمض <span class='chem-formula'>HCl</span> المخفف:", options: ["الماغنسيوم يتفاعل أسرع من الخارصين", "الخارصين يتفاعل والماغنسيوم لا يتفاعل", "الماغنسيوم يتفاعل والخارصين لا يتفاعل", "يتفاعلان بنفس السرعة"], correct: 0 },
+    { q: "كل الفلزات التالية تحل محل هيدروجين الحمض المخفف، عدا:", options: ["<span class='chem-formula'>Hg</span>", "<span class='chem-formula'>Pb</span>", "<span class='chem-formula'>Al</span>", "<span class='chem-formula'>Ca</span>"], correct: 0 },
+    { q: "عند إضافة قطعة من الفضة إلى حمض الهيدروكلوريك المخفف:", options: ["لا يحدث تفاعل", "يتصاعد غاز الهيدروجين", "يتكون كلوريد الفضة", "يتكون أكسيد الفضة"], correct: 0 },
+    { q: "أي العناصر الآتية أكثر نشاطاً من عنصر الباريوم؟", options: ["البوتاسيوم <span class='chem-formula'>K</span>", "الكالسيوم <span class='chem-formula'>Ca</span>", "الصوديوم <span class='chem-formula'>Na</span>", "الألومنيوم <span class='chem-formula'>Al</span>"], correct: 0 },
+    { q: "تفاعلات كيميائية يتم فيها تبادل كاتيونات وأنيونات مركبين أيونيين لتكوين مركبين جديدين:", options: ["الإحلال المزدوج", "الإحلال البسيط", "الانحلال الحراري"], correct: 0 },
+    { q: "مركب يتكون من اتحاد كاتيون موجب مع أنيون سالب:", options: ["الملح", "الحمض", "القاعدة"], correct: 0 },
+    { q: "دليل كيميائي يتغير لونه تبعاً لدرجة حموضة أو قلوية المحلول المضاف إليه:", options: ["دليل اليونيفرسال", "الميثيل البرتقالي", "الفينولفثالين"], correct: 0 },
+    { q: "تفاعل حمض مع قلوي لتكوين ملح وماء يسمى تفاعل:", options: ["التعادل", "الأكسدة", "الترسيب"], correct: 0 },
+    { q: "تفاعلات تتم بين محلولي ملحين لتكوين مادة جديدة لا تذوب في الماء:", options: ["تفاعلات الترسيب", "تفاعلات التعادل", "تفاعلات التفكك"], correct: 0 },
+    { q: "ماء يحتوي على نسبة عالية من أملاح الكالسيوم والماغنسيوم ويسبب تكلسات:", options: ["الماء العسر", "الماء اليسر", "الماء المقطر"], correct: 0 },
+    { q: "كل مما يلي من تفاعلات الإحلال المزدوج، عدا:", options: ["تفاعل فلز نشط مع حمض مخفف", "تفاعل حمض مع قلوي", "تفاعل حمض مع ملح", "تفاعل محلول ملح مع محلول ملح"], correct: 0 },
+    { q: "يتلون دليل اليونيفرسال باللون البنفسجي عند إضافته إلى محلول:", options: ["<span class='chem-formula'>NaOH</span>", "<span class='chem-formula'>NaCl</span>", "<span class='chem-formula'>HCl</span>", "<span class='chem-formula'>AgNO<sub>3</sub></span>"], correct: 0 },
+    { q: "يتفاعل حمض الهيدروكلوريك مع هيدروكسيد الصوديوم ويتكون:", options: ["كلوريد الصوديوم وماء", "أكسيد الصوديوم وماء", "كلوريد صوديوم و <span class='chem-formula'>CO<sub>2</sub></span>", "أكسيد صوديوم و <span class='chem-formula'>H<sub>2</sub></span>"], correct: 0 },
+    { q: "عند إضافة المزيد من <span class='chem-formula'>HCl</span> لمحلول متعادل به دليل اليونيفرسال يتغير اللون من:", options: ["الأخضر إلى الأحمر", "الأحمر إلى الأخضر", "البنفسجي إلى الأحمر", "الأخضر إلى البنفسجي"], correct: 0 },
+    { q: "أي مما يلي يُعبر عن تفاعل تعادل؟", options: ["<span class='chem-formula'>H<sub>2</sub>SO<sub>4</sub> + 2NaOH &rarr; Na<sub>2</sub>SO<sub>4</sub> + 2H<sub>2</sub>O</span>", "<span class='chem-formula'>CaCO<sub>3</sub> &rarr; CaO + CO<sub>2</sub></span>", "<span class='chem-formula'>Fe + CuSO<sub>4</sub> &rarr; FeSO<sub>4</sub> + Cu</span>", "<span class='chem-formula'>2Mg + O<sub>2</sub> &rarr; 2MgO</span>"], correct: 0 },
+    { q: "عند تفاعل <span class='chem-formula'>HCl</span> المخفف مع ملح كربونات الصوديوم، يتصاعد غاز:", options: ["يعكر ماء الجير الرائق", "يشتعل بفرقعة", "يساعد على الاشتعال", "لونه بني محمر"], correct: 0 },
+    { q: "عند تفاعل محلول <span class='chem-formula'>NaCl</span> مع محلول نترات الفضة، يتكون راسب:", options: ["أبيض من <span class='chem-formula'>AgCl</span>", "أبيض من <span class='chem-formula'>NaNO<sub>3</sub></span>", "أزرق من <span class='chem-formula'>AgCl</span>", "أصفر من <span class='chem-formula'>NaNO<sub>3</sub></span>"], correct: 0 },
+    { q: "تفاعلات الإحلال المزدوج بين محاليل الأملاح تكون مصحوبة بتكوين:", options: ["راسب", "فلز", "أكسيد", "لافلز"], correct: 0 },
+    { q: "كل المعادلات التالية تمثل تفاعل إحلال مزدوج، عدا:", options: ["<span class='chem-formula'>Fe + CuSO<sub>4</sub> &rarr; FeSO<sub>4</sub> + Cu</span>", "<span class='chem-formula'>AgNO<sub>3</sub> + NaCl &rarr; AgCl + NaNO<sub>3</sub></span>", "<span class='chem-formula'>BaCl<sub>2</sub> + Na<sub>2</sub>SO<sub>4</sub> &rarr; BaSO<sub>4</sub> + 2NaCl</span>", "<span class='chem-formula'>HCl + NaOH &rarr; NaCl + H<sub>2</sub>O</span>"], correct: 0 },
+    { q: "الماء العسر يحتوي على نسبة عالية من أملاح:", options: ["الكالسيوم والماغنسيوم", "الصوديوم والبوتاسيوم", "الحديد والنحاس", "الفضة والزنك"], correct: 0 },
+    { q: "عملية كيميائية تؤدي إلى زيادة نسبة الأكسجين في المادة أو نقص الهيدروجين:", options: ["الأكسدة", "الاختزال", "التعادل"], correct: 0 },
+    { q: "عملية كيميائية تؤدي إلى نقص نسبة الأكسجين في المادة أو زيادة الهيدروجين:", options: ["الاختزال", "الأكسدة", "الانحلال"], correct: 0 },
+    { q: "عملية كيميائية تفقد فيها الذرة أو الأيون إلكتروناً أو أكثر:", options: ["الأكسدة", "الاختزال", "الترسيب"], correct: 0 },
+    { q: "عملية كيميائية تكتسب فيها الذرة أو الأيون إلكتروناً أو أكثر:", options: ["الاختزال", "الأكسدة", "التفكك"], correct: 0 },
+    { q: "المادة التي تفقد إلكتروناً أو أكثر أثناء التفاعل الكيميائي هي:", options: ["العامل المختزل", "العامل المؤكسد", "العامل الحفاز"], correct: 0 },
+    { q: "المادة التي تكتسب إلكتروناً أو أكثر أثناء التفاعل الكيميائي هي:", options: ["العامل المؤكسد", "العامل المختزل", "المادة المترسبة"], correct: 0 },
+    { q: "عملية تحول الأيون: <span class='chem-formula'>Fe<sup>2+</sup> &rarr; Fe<sup>3+</sup> + e<sup>-</sup></span> تمثل عملية:", options: ["أكسدة", "اختزال", "تعادل"], correct: 0 },
+    { q: "عملية تحول: <span class='chem-formula'>Cl<sub>2</sub> + 2e<sup>-</sup> &rarr; 2Cl<sup>-</sup></span> تمثل عملية:", options: ["اختزال", "أكسدة", "انحلال"], correct: 0 },
+    { q: "تُعرف عملية الاختزال إلكترونياً بأنها عملية:", options: ["اكتساب إلكترونات", "فقد إلكترونات", "اكتساب بروتونات", "زيادة أكسجين"], correct: 0 },
+    { q: "المادة التي تفقد إلكترون أو أكثر أثناء التفاعل تسمى:", options: ["عامل مختزل", "عامل مؤكسد", "عامل حفاز", "راسب"], correct: 0 },
+    { q: "في التفاعل: <span class='chem-formula'>Mg + Br<sub>2</sub> &rarr; MgBr<sub>2</sub></span> كل مما يلي يصف التفاعل، عدا:", options: ["الماغنسيوم هو العامل المؤكسد", "تفاعل اتحاد مباشر", "تأكسدت ذرة الماغنسيوم", "البروم هو العامل المؤكسد"], correct: 0 },
+    { q: "نصف التفاعل: <span class='chem-formula'>F + e<sup>-</sup> &rarr; F<sup>-</sup></span> يُعبر عن عملية:", options: ["اختزال", "أكسدة", "انحلال", "إحلال"], correct: 0 },
+    { q: "عندما تفقد ذرة الصوديوم إلكترون مستوى طاقتها الخارجي، فإنها:", options: ["تتأكسد وتعتبر عامل مختزل", "تتأكسد فقط", "تُختزل وتعتبر عامل مؤكسد", "تُختزل فقط"], correct: 0 },
+    { q: "تُعبر المعادلة: <span class='chem-formula'>Cu &rarr; Cu<sup>2+</sup> + 2e<sup>-</sup></span> عن:", options: ["نصف تفاعل أكسدة", "نصف تفاعل اختزال", "أكسدة واختزال معاً", "تفاعل اتحاد مباشر"], correct: 0 },
+    { q: "عند إضافة الخارصين إلى كبريتات النحاس الزرقاء:", options: ["يكتسب أيون النحاس إلكترونين ويترسب", "يحل النحاس محل الخارصين", "تكتسب ذرة الخارصين إلكترونين", "تعتبر ذرة الخارصين عامل مؤكسد"], correct: 0 },
+    { q: "في تفاعل الصوديوم والكلور: <span class='chem-formula'>2Na + Cl<sub>2</sub> &rarr; 2NaCl</span> أي مما يلي يُختزل؟", options: ["ذرات الكلور", "أيونات الصوديوم", "ذرات الصوديوم", "أيونات الكلور"], correct: 0 },
+    { q: "في التفاعل: <span class='chem-formula'>2Mg + O<sub>2</sub> &rarr; 2MgO</span> العامل المؤكسد هو:", options: ["<span class='chem-formula'>O<sub>2</sub></span>", "<span class='chem-formula'>Mg</span>", "<span class='chem-formula'>O<sup>2-</sup></span>", "<span class='chem-formula'>Mg<sup>2+</sup></span>"], correct: 0 },
+    { q: "في التفاعل: <span class='chem-formula'>X + Y &rarr; X<sup>2+</sup>Y<sup>2-</sup></span> أي العبارات صحيحة؟", options: ["المادة X تأكسدت وتعتبر عامل مختزل", "المادة Y تأكسدت وتعتبر عامل مؤكسد", "المادة Y اختزلت وتعتبر عامل مختزل", "المادة X اختزلت وتعتبر عامل مؤكسد"], correct: 0 },
+    { q: "في تفاعل الخارصين مع كبريتات النحاس، أي مما يلي لا يحدث له أكسدة أو اختزال؟", options: ["<span class='chem-formula'>SO<sub>4</sub><sup>2-</sup></span>", "<span class='chem-formula'>Zn<sup>0</sup></span>", "<span class='chem-formula'>Cu<sup>0</sup></span>", "<span class='chem-formula'>Cu<sup>2+</sup></span>"], correct: 0 },
+    { q: "عند إضافة الحديد إلى حمض <span class='chem-formula'>HCl</span> المخفف، فإنه:", options: ["يتأكسد ويصبح عاملاً مختزلاً", "يُختزل ويصبح عاملاً مؤكسداً", "لا يتفاعل ويترسب", "يتأكسد ويكتسب إلكترونات"], correct: 0 },
+    { q: "أقل درجة حرارة يجب أن تصل إليها المادة لتبدأ في الاشتعال تسمى:", options: ["درجة الاشتعال", "نقطة الانصهار", "درجة الغليان"], correct: 0 },
+    { q: "مدى سهولة وسرعة اشتعال المادة عند درجة حرارة الوسط المحيط بها:", options: ["القابلية للاشتعال", "حرارة الاحتراق", "طاقة التنشيط"], correct: 0 },
+    { q: "مواد سريعة الاشتعال عند درجة حرارة الوسط المحيط بها:", options: ["مواد قابلة للاشتعال", "مواد عازلة", "مواد خاملة"], correct: 0 },
+    { q: "تفاعل كيميائي بين مادة والأكسجين ينتج عنه طاقة حرارية أو ضوئية ومواد جديدة:", options: ["الاحتراق", "الانحلال", "الترسيب"], correct: 0 },
+    { q: "أكاسيد فلزية يذوب بعضها في الماء مكونة محاليل قلوية:", options: ["أكاسيد قاعدية", "أكاسيد حامضية", "أكاسيد مترددة"], correct: 0 },
+    { q: "أكاسيد لافلزية يذوب معظمها في الماء مكونة أحماضاً:", options: ["أكاسيد حامضية", "أكاسيد قاعدية", "أكاسيد متعادلة"], correct: 0 },
+    { q: "احتراق المادة في وفرة من غاز الأكسجين يُسمى:", options: ["احتراقاً تاماً", "احتراقاً غير تام", "انحلالاً حرارياً"], correct: 0 },
+    { q: "احتراق المادة في كمية محدودة من غاز الأكسجين يُسمى:", options: ["احتراقاً غير تام", "احتراقاً تاماً", "تفككاً ضوئياً"], correct: 0 },
+    { q: "مواد عضوية تتكون من عنصري الكربون والهيدروجين فقط:", options: ["الهيدروكربونات", "الهالوجينات", "الكربوهيدرات"], correct: 0 },
+    { q: "مسحوق من الكربون غير المحترق ينتج عن الاحتراق غير التام للهيدروكربونات:", options: ["السناج (هباب الفحم)", "الجرافيت", "الفحم النباتي"], correct: 0 },
+    { q: "المكون الأساسي للغاز الطبيعي هو غاز:", options: ["الميثان <span class='chem-formula'>CH<sub>4</sub></span>", "البروبان", "البيوتان"], correct: 0 },
+    { q: "مادة تنتج دائماً عند الاحتراق التام أو غير التام للهيدروكربونات:", options: ["بخار الماء <span class='chem-formula'>H<sub>2</sub>O</span>", "أول أكسيد الكربون", "الكربون الأسود"], correct: 0 },
+    { q: "كل مما يلي يُمثل ضلعاً في مثلث الاحتراق، عدا:", options: ["الماء", "الحرارة", "الأكسجين", "الوقود"], correct: 0 },
+    { q: "لا تحترق الورقة المبللة بالماء بسهولة، لأن الماء:", options: ["يمتص الحرارة", "يمتص الأكسجين", "يرفع درجة اشتعالها", "يزيد قابليتها للاشتعال"], correct: 0 },
+    { q: "إذا كانت درجة اشتعال X هي 45&deg;C و Y هي 300&deg;C فإن المادة الأكثر قابلية للاشتعال هي:", options: ["المادة X لأن درجة اشتعالها أقل", "المادة Y لأن درجة اشتعالها أقل", "المادة Y لأن درجة اشتعالها أكبر", "المادة X لأن درجة اشتعالها أكبر"], correct: 0 },
+    { q: "علامة اللهب (المواد القابلة للاشتعال) توضع على عبوات:", options: ["البنزين والكحول", "الماء والخل", "الرمل والزجاج", "النيتروجين السائل"], correct: 0 },
+    { q: "المادة الموجودة في رأس عود الثقاب وتعمل كعامل مؤكسد هي:", options: ["كلورات البوتاسيوم", "الفوسفور الأحمر", "مسحوق الزجاج", "ثاني أكسيد الكربون"], correct: 0 },
+    { q: "يحتوي جانب علبة أعواد الثقاب على كل مما يلي، عدا:", options: ["كلورات البوتاسيوم", "الفوسفور الأحمر", "مسحوق الزجاج", "مسحوق الرمل"], correct: 0 },
+    { q: "عند احتراق شريط الماغنسيوم في مخبار به أكسجين يتكون مسحوق أبيض من:", options: ["أكسيد الماغنسيوم", "ثاني أكسيد الكربون", "كربونات الماغنسيوم", "هيدروكسيد الماغنسيوم"], correct: 0 },
+    { q: "المحلول المائي لأكسيد الماغنسيوم يكون:", options: ["قلوياً يُزرق صبغة عباد الشمس", "حامضياً يُحمر صبغة عباد الشمس", "قلوياً يُحمر صبغة عباد الشمس", "متعادلاً لا يؤثر"], correct: 0 },
+    { q: "يظهر لهب موقد بنزن باللون الأزرق عندما تكون كمية الأكسجين:", options: ["وفيرة", "محدودة جداً", "منعدمة تماماً", "مختلطة بالنيتروجين"], correct: 0 },
+    { q: "المادة السوداء التي تتكون على أواني الطهي عند حدوث احتراق غير تام للغاز هي:", options: ["السناج", "الرماد", "أكسيد النحاس", "كلوريد الكوبلت"], correct: 0 },
+    { q: "السناج عبارة عن:", options: ["مسحوق من الكربون غير المحترق", "أول أكسيد الكربون", "رماد الماغنسيوم المحترق", "خليط من النيتروجين والكربون"], correct: 0 },
+    { q: "المواد العضوية التي تتكون أساساً من عنصري الكربون والهيدروجين تُسمى:", options: ["هيدروكربونات", "هالوجينات", "أملاح معدنية", "قلويات"], correct: 0 },
+    { q: "غاز البوتاجاز عبارة عن خليط من غازي:", options: ["البروبان والبيوتان", "الميثان والإيثان", "الأكسجين والنيتروجين", "الهيدروجين والأرجون"], correct: 0 },
+    { q: "يُستخدم شريط كلوريد الكوبلت اللامائي للكشف عن الماء فيتحول لونه من:", options: ["الأزرق الباهت إلى الوردي", "الوردي إلى الأزرق", "الأبيض إلى الأسود", "الأخضر إلى الوردي"], correct: 0 },
+    { q: "عند احتراق الميثان مع الأكسجين بنسبة جزيئات (1 : 1) ينتج:", options: ["السناج", "أكبر كمية من الطاقة", "غاز الهيدروجين والماء", "ثاني أكسيد الكربون"], correct: 0 },
+    { q: "عند الاحتراق غير التام لغاز الميثان بنسبة (2 ميثان : 3 أكسجين) ينتج:", options: ["أول أكسيد الكربون وبخار ماء", "ثاني أكسيد الكربون وبخار ماء", "كربون وبخار ماء", "بخار ماء وسناج"], correct: 0 },
+    { q: "كفاءة الموقد المنزلي تكون أعلى ما يمكن عندما يكون لون اللهب الصادر منه:", options: ["أزرق", "أصفر", "برتقالياً", "أحمر"], correct: 0 },
+    { q: "غاز عديم اللون والرائحة، أثقل من الهواء ويذوب في الماء مكوناً حمض الكربونيك:", options: ["ثاني أكسيد الكربون", "أول أكسيد الكربون", "ثاني أكسيد الكبريت"], correct: 0 },
+    { q: "غاز سام عديم اللون والرائحة ينتج عن الاحتراق غير التام للهيدروكربونات:", options: ["أول أكسيد الكربون", "ثاني أكسيد النيتروجين", "الميثان"], correct: 0 },
+    { q: "غاز عديم اللون ذو رائحة خانقة، يذوب في الماء مكوناً حمض الكبريتوز:", options: ["ثاني أكسيد الكبريت", "ثاني أكسيد الكربون", "كبريتيد الهيدروجين"], correct: 0 },
+    { q: "غاز لونه بني محمر، ذو رائحة نفاذة وخانقة، يذوب في الماء مكوناً أحماضاً:", options: ["ثاني أكسيد النيتروجين", "أكسيد النيتريك", "غاز الكلور"], correct: 0 },
+    { q: "دخان كثيف يتشكل في الهواء نتيجة تصاعد كميات كبيرة من الغازات والسناج المعلق:", options: ["الضباب الدخاني", "المطر الحامضي", "الاحتباس الحراري"], correct: 0 },
+    { q: "خليط الانبعاثات الناتجة عن احتراق الوقود داخل محرك السيارة لتوليد الحركة:", options: ["عوادم السيارات", "السناج", "الأبخرة النفطية"], correct: 0 },
+    { q: "تطبيق تكنولوجي في محركات السيارات لتحويل الغازات السامة إلى مواد آمنة:", options: ["المحول الحفزي", "المكربن", "الفلتر الزيتي"], correct: 0 },
+    { q: "مواد كيميائية تزيد من سرعة التفاعل الكيميائي دون أن تتغير أو تُستهلك:", options: ["العوامل الحفازة", "الكواشف", "المؤكسدات"], correct: 0 },
+    { q: "أمطار ناتجة عن ذوبان الغازات الحمضية المتصاعدة في ماء المطر:", options: ["الأمطار الحامضية", "الأمطار القلوية", "الأمطار المعدنية"], correct: 0 },
+    { q: "يتكون حمض الكربونيك عند ذوبان غاز ............ في الماء:", options: ["<span class='chem-formula'>CO<sub>2</sub></span>", "<span class='chem-formula'>SO<sub>2</sub></span>", "<span class='chem-formula'>NO<sub>2</sub></span>", "<span class='chem-formula'>CO</span>"], correct: 0 },
+    { q: "الغاز الذي يتميز برائحة خانقة ويذوب في الماء مكوناً حمض الكبريتوز هو:", options: ["ثاني أكسيد الكبريت", "ثاني أكسيد النيتروجين", "بخار الماء", "أول أكسيد الكربون"], correct: 0 },
+    { q: "يتميز غاز ثاني أكسيد النيتروجين <span class='chem-formula'>NO<sub>2</sub></span> بلون:", options: ["بني محمر", "أبيض", "أزرق باهت", "أسود"], correct: 0 },
+    { q: "أي مما يلي يتأكسد في الهواء مكوناً غازاً لونه بني محمر؟", options: ["<span class='chem-formula'>NO</span>", "<span class='chem-formula'>NO<sub>2</sub></span>", "<span class='chem-formula'>SO<sub>2</sub></span>", "<span class='chem-formula'>SO<sub>3</sub></span>"], correct: 0 },
+    { q: "كل من الغازات التالية عديمة اللون، عدا غاز:", options: ["<span class='chem-formula'>NO<sub>2</sub></span>", "<span class='chem-formula'>NO</span>", "<span class='chem-formula'>CO</span>", "<span class='chem-formula'>CO<sub>2</sub></span>"], correct: 0 },
+    { q: "احتراق أكوام قش الأرز يكون غالباً احتراقاً غير تام بسبب:", options: ["تكدسها ونقص الأكسجين", "جفافها الزائد", "انخفاض الحرارة", "احتوائها على شوائب"], correct: 0 },
+    { q: "ما دور المواد الحفازة الموجودة في عوادم ومحولات السيارات؟", options: ["زيادة سرعة تحويل الغازات لمواد آمنة", "تقليل درجة حرارة المحرك", "زيادة الطاقة اللازمة", "زيادة استهلاك الوقود"], correct: 0 },
+    { q: "أي من الغازات التالية ينتج عن تفاعلات الأكسدة والاختزال في المحول الحفزي كغاز آمن؟", options: ["<span class='chem-formula'>CO<sub>2</sub></span>", "<span class='chem-formula'>NO</span>", "<span class='chem-formula'>CO</span>", "<span class='chem-formula'>NO<sub>2</sub></span>"], correct: 0 },
+    { q: "تُركب الفلاتر على مداخن المصانع بهدف:", options: ["تنقية الغازات قبل خروجها للهواء", "زيادة حرارة الغازات", "زيادة سرعة الاحتراق", "تقليل استهلاك الكهرباء"], correct: 0 },
+    { q: "يُفضل استخدام الغاز الطبيعي كوقود في الصناعة بدلاً من الفحم، لأنه:", options: ["ينتج كميات أقل من أكاسيد الكبريت", "يُطلق كميات أقل من الطاقة", "لا يحتاج لأكسجين", "من مصادر الطاقة المتجددة"], correct: 0 },
+    { q: "تعتمد أجهزة غسل الغازات الحمضية في المداخن على مبدأ كيميائي هو:", options: ["التعادل بين الأحماض والقلويات", "التسامي", "الانحلال الحراري", "التبريد السريع"], correct: 0 },
+    { q: "أي مما يلي يعتبر غازاً حمضياً ساماً يتم معالجته في أجهزة غسل الغازات؟", options: ["<span class='chem-formula'>SO<sub>2</sub></span>", "<span class='chem-formula'>SO<sub>3</sub></span>", "<span class='chem-formula'>CO<sub>2</sub></span>", "<span class='chem-formula'>NO<sub>3</sub></span>"], correct: 0 },
+    { q: "كل من الغازات التالية يذوب في مياه الأمطار مكوناً أمطاراً حمضية، عدا:", options: ["<span class='chem-formula'>N<sub>2</sub></span>", "<span class='chem-formula'>SO<sub>2</sub></span>", "<span class='chem-formula'>CO<sub>2</sub></span>", "<span class='chem-formula'>NO<sub>2</sub></span>"], correct: 0 },
+    { q: "إذا كانت الكتلة الكلية للمواد المتفاعلة في تجربة احتراق هي 50g، فإن كتلة النواتج الكلية تكون:", options: ["50 g", "25 g", "40 g", "100 g"], correct: 0 }
+  ];
+
+  const moralAdvices = [
+    "«التواضع عند الفهم وحسن الخلق مع الزملاء والمعلمين زكاة العلم الحقيقية.»",
+    "«من سلك طريقاً يلتمس فيه علماً سهل الله له به طريقاً إلى الجنة.»",
+    "«بر الوالدين ودعاؤهما هو السر الخفي في كل توفيق وفهم وتفوق.»",
+    "«اجعل نيتك في المذاكرة نفع الأمة وعمارة الأرض لتؤجر على كل دقيقة.»"
+  ];
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playWrongSound() {
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
+    } catch(e) {}
+  }
+
+  function playCorrectSound() {
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(840, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.2);
+    } catch(e) {}
+  }
+
+  let currentLevel = 1;
+  const maxLevels = 3;
+  let score = 0;
+  let hearts = 10; // يبدأ بـ 10 قلوب
+  const maxHearts = 12; // الحد الأقصى للقلوب
+  let consecutiveCorrect = 0;
+  let skipsLeft = 3;
+  let playerName = "بطل الكيمياء";
+  let speedDuration = 9500; // الديفولت بطيء
+
+  // تايمر المستوى: 3 دقائق (180 ثانية)
+  const LEVEL_TIME = 180;
+  let timeLeft = LEVEL_TIME;
+  let levelTimerInterval = null;
+
+  let activeQuestionsQueue = [];
+  let currentQIndex = 0;
+  let currentQ = null;
+  let animationFrameId = null;
+  let isAnswerLocked = false;
+  let currentBalloonElements = [];
+
+  const balloonColors = ["#16a34a", "#ea580c", "#0284c7", "#d97706", "#7c3aed"];
+
+  function setAppTheme(theme) {
+    document.body.classList.toggle('light-mode', theme === 'light');
+    document.getElementById('mode-dark-btn').classList.toggle('active', theme === 'dark');
+    document.getElementById('mode-light-btn').classList.toggle('active', theme === 'light');
+    document.getElementById('theme-btn').innerText = theme === 'light' ? '🌙 ليل' : '☀️ نهار';
+  }
+
+  function toggleTheme() {
+    const isLight = document.body.classList.contains('light-mode');
+    setAppTheme(isLight ? 'dark' : 'light');
+  }
+
+  function setGameSpeed(speed) {
+    document.getElementById('speed-slow-btn').classList.toggle('active', speed === 'slow');
+    document.getElementById('speed-med-btn').classList.toggle('active', speed === 'med');
+    document.getElementById('speed-fast-btn').classList.toggle('active', speed === 'fast');
+    
+    if (speed === 'slow') {
+      speedDuration = 9500;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: بطيء";
+    } else if (speed === 'med') {
+      speedDuration = 7000;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: متوسط";
+    } else {
+      speedDuration = 4800;
+      document.getElementById('speed-indicator').innerText = "⚡ سرعة: سريع";
+    }
+  }
+
+  function shuffle(array) {
+    return [...array].sort(() => Math.random() - 0.5);
+  }
+
+  function showPreloaderScreen() {
+    const nameInput = document.getElementById('player-name-input').value.trim();
+    if (nameInput) playerName = nameInput;
+
+    document.getElementById('start-screen').classList.add('hidden');
+    const prepScreen = document.getElementById('prep-screen');
+    prepScreen.classList.remove('hidden');
+
+    const advice = moralAdvices[Math.floor(Math.random() * moralAdvices.length)];
+    document.getElementById('advice-text').innerText = advice;
+
+    setTimeout(() => {
+      prepScreen.classList.add('hidden');
+      initGame();
+    }, 3500);
+  }
+
+  function initGame() {
+    score = 0;
+    hearts = 10;
+    consecutiveCorrect = 0;
+    skipsLeft = 3;
+    currentLevel = 1;
+    startLevel(currentLevel);
+  }
+
+  function startLevel(lvl) {
+    currentLevel = lvl;
+    currentQIndex = 0;
+    timeLeft = LEVEL_TIME; // 3 دقائق = 180 ثانية
+
+    // سحب أسئلة عشوائية من بنك الـ 113 سؤالاً
+    activeQuestionsQueue = shuffle(masterQuestions);
+
+    startLevelTimer();
+    loadQuestion();
+  }
+
+  function startLevelTimer() {
+    clearInterval(levelTimerInterval);
+    updateTimerHUD();
+    levelTimerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerHUD();
+      if (timeLeft <= 0) {
+        clearInterval(levelTimerInterval);
+        endGame(false, "انتهت الـ 3 دقائق المحددة للمستوى! ⏰");
+      }
+    }, 1000);
+  }
+
+  function updateTimerHUD() {
+    const mins = Math.floor(Math.max(0, timeLeft) / 60);
+    const secs = Math.max(0, timeLeft) % 60;
+    const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const timerElem = document.getElementById('timer-display');
+    timerElem.innerText = formatted;
+    
+    if (timeLeft <= 30) {
+      timerElem.classList.add('timer-warning');
+    } else {
+      timerElem.classList.remove('timer-warning');
+    }
+  }
+
+  function updateHUD() {
+    document.getElementById('level-display').innerText = `${currentLevel} / ${maxLevels}`;
+    document.getElementById('score-display').innerText = score;
+    document.getElementById('hearts-count-num').innerText = hearts;
+    document.getElementById('hearts-display').innerText = '❤️'.repeat(Math.max(0, hearts));
+    document.getElementById('skip-num').innerText = skipsLeft;
+    document.getElementById('q-number-badge').innerText = `سؤال ${currentQIndex + 1}`;
+  }
+
+  function loadQuestion() {
+    clearStage();
+    isAnswerLocked = false;
+
+    if (hearts <= 0) {
+      clearInterval(levelTimerInterval);
+      endGame(false, "نفدت القلوب لديك!");
+      return;
+    }
+
+    if (currentQIndex >= activeQuestionsQueue.length) {
+      activeQuestionsQueue = shuffle(masterQuestions);
+      currentQIndex = 0;
+    }
+
+    currentQ = activeQuestionsQueue[currentQIndex];
+    document.getElementById('question-text').innerHTML = currentQ.q;
+    updateHUD();
+
+    spawnBalloons(currentQ);
+  }
+
+  function clearStage() {
+    const stage = document.getElementById('game-stage');
+    stage.innerHTML = '';
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    currentBalloonElements = [];
+  }
+
+  function spawnBalloons(q) {
+    const stage = document.getElementById('game-stage');
+    const stageWidth = stage.clientWidth || 360;
+    const stageHeight = stage.clientHeight || 450;
+
+    const optionsData = q.options.map((opt, idx) => ({
+      text: opt,
+      isCorrect: idx === q.correct
+    }));
+
+    const shuffledOpts = shuffle(optionsData);
+    const count = shuffledOpts.length;
+    const colWidth = stageWidth / count;
+
+    let startTime = null;
+    currentBalloonElements = [];
+
+    shuffledOpts.forEach((opt, i) => {
+      const balloon = document.createElement('div');
+      balloon.className = 'balloon';
+      
+      const content = document.createElement('div');
+      content.className = 'balloon-content';
+      content.innerHTML = opt.text;
+      balloon.appendChild(content);
+
+      balloon.style.backgroundColor = balloonColors[i % balloonColors.length];
+
+      const leftPos = Math.max(8, Math.min(stageWidth - 104, (i * colWidth) + ((colWidth - 98) / 2)));
+      balloon.style.left = `${leftPos}px`;
+      
+      balloon.onclick = () => onBalloonClick(opt.isCorrect, balloon);
+
+      stage.appendChild(balloon);
+      currentBalloonElements.push({ el: balloon, isCorrect: opt.isCorrect, offsetDelay: (i % 2) * 18 });
+    });
+
+    function step(timestamp) {
+      if (isAnswerLocked) return;
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = elapsed / speedDuration;
+
+      if (progress < 1) {
+        const currentY = stageHeight - (progress * (stageHeight + 140));
+        currentBalloonElements.forEach(b => {
+          b.el.style.top = `${currentY + b.offsetDelay}px`;
+        });
+        animationFrameId = requestAnimationFrame(step);
+      } else {
+        onMissedBalloons();
+      }
+    }
+
+    animationFrameId = requestAnimationFrame(step);
+  }
+
+  function onBalloonClick(isCorrect, element) {
+    if (isAnswerLocked) return;
+    isAnswerLocked = true;
+    cancelAnimationFrame(animationFrameId);
+
+    if (isCorrect) {
+      playCorrectSound();
+      element.style.transform = 'scale(1.35)';
+      element.style.opacity = '0';
+      handleAnswer(true, 500);
+    } else {
+      playWrongSound();
+      element.style.opacity = '0.3';
+      bringCorrectToCenter();
+      handleAnswer(false, 1800);
+    }
+  }
+
+  function onMissedBalloons() {
+    if (isAnswerLocked) return;
+    isAnswerLocked = true;
+    cancelAnimationFrame(animationFrameId);
+
+    playWrongSound();
+    bringCorrectToCenter();
+    handleAnswer(false, 1800);
+  }
+
+  function bringCorrectToCenter() {
+    currentBalloonElements.forEach(b => {
+      if (b.isCorrect) {
+        b.el.classList.add('highlight-correct', 'center-focus');
+      } else {
+        b.el.classList.add('fade-out');
+      }
+    });
+  }
+
+  function handleAnswer(isCorrect, delay) {
+    if (isCorrect) {
+      score += 10;
+      consecutiveCorrect++;
+      flashQuestionBox(true);
+
+      // زيادة القلوب كل 4 إجابات متتالية صحيحة بحد أقصى 12 قلباً
+      if (consecutiveCorrect === 4) {
+        if (hearts < maxHearts) {
+          hearts++;
+        }
+        consecutiveCorrect = 0;
+      }
+    } else {
+      hearts--;
+      consecutiveCorrect = 0;
+      flashQuestionBox(false);
+    }
+
+    updateHUD();
+
+    setTimeout(() => {
+      if (hearts <= 0) {
+        clearInterval(levelTimerInterval);
+        endGame(false, "نفدت القلوب لديك!");
+      } else {
+        currentQIndex++;
+        loadQuestion();
+      }
+    }, delay);
+  }
+
+  function flashQuestionBox(correct) {
+    const box = document.getElementById('question-box');
+    box.style.borderColor = correct ? '#16a34a' : '#ef4444';
+    setTimeout(() => {
+      box.style.borderColor = 'var(--accent)';
+    }, 600);
+  }
+
+  function skipQuestion() {
+    if (skipsLeft > 0 && !isAnswerLocked) {
+      skipsLeft--;
+      clearStage();
+      currentQIndex++;
+      loadQuestion();
+    }
+  }
+
+  function endGame(isWin, customTitle) {
+    clearStage();
+    clearInterval(levelTimerInterval);
+
+    const endScreen = document.getElementById('end-screen');
+    const endTitle = document.getElementById('end-title');
+    const endPraise = document.getElementById('end-praise');
+    const finalScore = document.getElementById('final-score');
+
+    finalScore.innerText = score;
+    endTitle.innerText = customTitle || "انتهت الجولة!";
+    endTitle.style.color = isWin ? "#16a34a" : "#ef4444";
+
+    if (score >= 180) {
+      endPraise.innerText = `ما شاء الله تبارك الله! إتقان وعبقرية كيميائية فائقة يا (${playerName})! أداء أسطوري يُفتخر به في هذا التحدي الزمني. استمر في التألق! 🌟🏆`;
+    } else if (score >= 90) {
+      endPraise.innerText = `أحسنت جداً يا بطل الكيمياء (${playerName})! مستواك رائع وفهمك ممتاز، ومع الاستمرار ستصل لأعلى قمة التفوق بكل ثقة! 👏🔬`;
+    } else {
+      endPraise.innerText = `محاولة ممتازة يا (${playerName})! كل محاولة تكسبك خبرة ومعرفة أدق بالمفاهيم والمعادلات، ابدأ من جديد وتحدى نفسك لكسر هذا السكور! 💪💡`;
+    }
+
+    endScreen.classList.remove('hidden');
+  }
+
+  function restartGame() {
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('start-screen').classList.remove('hidden');
+  }
+
+  function shareScore() {
+    const text = `حققت ${score} نقطة في لعبة كيمياء الثانوية العامة (أ/ عبد الرحمن عبد الله - 01021779644)! 🧪 هل تستطيع تجاوز هذا الرقم؟`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'تحدي الكيمياء',
+        text: text,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('تم نسخ النتيجة ورسالة التحدي بنجاح!');
+    }
+  }
+
+  function captureScreenshot() {
+    const target = document.getElementById('end-card');
+    html2canvas(target, { backgroundColor: '#111b36', scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `نتيجة_${playerName}_كيمياء.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+</script>
+
+</body>
+</html>
